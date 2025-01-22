@@ -528,6 +528,7 @@ Class | Method | HTTP request | Description
  - [EmailDomainDKIMStatusRegionsInner](docs/EmailDomainDKIMStatusRegionsInner.md)
  - [EmailDomainDKIMStatusRegionsInnerTokensInner](docs/EmailDomainDKIMStatusRegionsInnerTokensInner.md)
  - [EmailDomainOwnershipStatus](docs/EmailDomainOwnershipStatus.md)
+ - [EmailDomainOwnershipStatusEnvironmentDnsRecord](docs/EmailDomainOwnershipStatusEnvironmentDnsRecord.md)
  - [EmailDomainOwnershipStatusRegionsInner](docs/EmailDomainOwnershipStatusRegionsInner.md)
  - [EmailDomainSPFStatus](docs/EmailDomainSPFStatus.md)
  - [EmailDomainTrustedEmail](docs/EmailDomainTrustedEmail.md)
