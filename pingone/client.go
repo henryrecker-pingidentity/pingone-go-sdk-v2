@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"net/url"
-	"os"
 	"regexp"
 	"time"
 
@@ -35,13 +34,8 @@ var version = "0.12.14"
 
 func (c *Config) getConfigRegionMapping() model.RegionMapping {
 	var region model.RegionMapping
-	urlSuffixOverride := os.Getenv("PINGONE_TERRAFORM_REGION_URL_SUFFIX_OVERRIDE")
-	apiCodeOverride := os.Getenv("PINGONE_TERRAFORM_REGION_OVERRIDE")
-	if urlSuffixOverride != "" && apiCodeOverride != "" {
-		region = model.RegionMapping{
-			URLSuffix: urlSuffixOverride,
-			APICode:   management.EnumRegionCode(apiCodeOverride),
-		}
+	if c.OverridenRegion != nil {
+		region = *c.OverridenRegion
 	} else if v := c.RegionCode; v != nil {
 		region = model.FindRegionByAPICode(*v)
 	} else if c.Region != "" {

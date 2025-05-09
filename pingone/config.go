@@ -25,6 +25,7 @@ type Config struct {
 	// Deprecated: Use RegionCode instead
 	Region            string
 	RegionCode        *management.EnumRegionCode
+	OverridenRegion   *model.RegionMapping
 	UserAgentOverride *string
 	UserAgentSuffix   *string
 	validated         bool
@@ -118,6 +119,13 @@ func (c *Config) validateEnvironmentID() error {
 }
 
 func (c *Config) validateRegion() error {
+	if c.OverridenRegion != nil {
+		if !checkForValue(c.OverridenRegion.APICode) || !checkForValue(c.OverridenRegion.URLSuffix) {
+			return fmt.Errorf("Invalid region override.  Region code and URL suffix must be set")
+		}
+		// Otherwise the overriden region is going to be used, no need to validate the others
+		return nil
+	}
 
 	if !checkForValue(c.Region) && !checkForValue(c.RegionCode) {
 		if v := management.EnumRegionCode(envVar("PINGONE_REGION_CODE")); v != "" && string(v) != "UNKNOWN" {
