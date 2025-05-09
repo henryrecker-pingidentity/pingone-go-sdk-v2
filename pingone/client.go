@@ -139,16 +139,7 @@ func (c *Config) AuthorizeAPIClient(ctx context.Context) (*authorize.APIClient, 
 	} else {
 		clientcfg.SetDefaultServerIndex(0)
 
-		var region model.RegionMapping
-		if v := os.Getenv("PINGONE_TERRAFORM_REGION_URL_SUFFIX_OVERRIDE"); v != "" {
-			region = model.RegionMapping{
-				URLSuffix: v,
-			}
-		} else if v := c.RegionCode; v != nil {
-			region = model.FindRegionByAPICode(*v)
-		} else if c.Region != "" {
-			region = model.FindRegionByName(c.Region) //nolint:staticcheck
-		}
+		region := c.getConfigRegionMapping()
 
 		err := clientcfg.SetDefaultServerVariableDefaultValue("suffix", region.URLSuffix)
 		if err != nil {
