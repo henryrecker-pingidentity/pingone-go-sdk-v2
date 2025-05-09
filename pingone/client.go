@@ -33,6 +33,23 @@ type Client struct {
 
 var version = "0.12.14"
 
+func (c *Config) getConfigRegionMapping() model.RegionMapping {
+	var region model.RegionMapping
+	urlSuffixOverride := os.Getenv("PINGONE_TERRAFORM_REGION_URL_SUFFIX_OVERRIDE")
+	apiCodeOverride := os.Getenv("PINGONE_TERRAFORM_REGION_OVERRIDE")
+	if urlSuffixOverride != "" && apiCodeOverride != "" {
+		region = model.RegionMapping{
+			URLSuffix: urlSuffixOverride,
+			APICode:   management.EnumRegionCode(apiCodeOverride),
+		}
+	} else if v := c.RegionCode; v != nil {
+		region = model.FindRegionByAPICode(*v)
+	} else if c.Region != "" {
+		region = model.FindRegionByName(c.Region) //nolint:staticcheck
+	}
+	return region
+}
+
 func (c *Config) APIClient(ctx context.Context) (*Client, error) {
 
 	authorizeClient, err := c.AuthorizeAPIClient(ctx)
@@ -65,17 +82,6 @@ func (c *Config) APIClient(ctx context.Context) (*Client, error) {
 		return nil, err
 	}
 
-	var region model.RegionMapping
-	if v := os.Getenv("PINGONE_TERRAFORM_REGION_URL_SUFFIX_OVERRIDE"); v != "" {
-		region = model.RegionMapping{
-			URLSuffix: v,
-		}
-	} else if v := c.RegionCode; v != nil {
-		region = model.FindRegionByAPICode(*v)
-	} else if c.Region != "" {
-		region = model.FindRegionByName(c.Region) //nolint:staticcheck
-	}
-
 	apiClient := &Client{
 		AuthorizeAPIClient:   authorizeClient,
 		CredentialsAPIClient: credentialsClient,
@@ -83,7 +89,7 @@ func (c *Config) APIClient(ctx context.Context) (*Client, error) {
 		MFAAPIClient:         mfaClient,
 		RiskAPIClient:        riskClient,
 		VerifyAPIClient:      verifyClient,
-		Region:               region,
+		Region:               c.getConfigRegionMapping(),
 	}
 
 	return apiClient, nil
@@ -218,16 +224,7 @@ func (c *Config) CredentialsAPIClient(ctx context.Context) (*credentials.APIClie
 	} else {
 		clientcfg.SetDefaultServerIndex(0)
 
-		var region model.RegionMapping
-		if v := os.Getenv("PINGONE_TERRAFORM_REGION_URL_SUFFIX_OVERRIDE"); v != "" {
-			region = model.RegionMapping{
-				URLSuffix: v,
-			}
-		} else if v := c.RegionCode; v != nil {
-			region = model.FindRegionByAPICode(*v)
-		} else if c.Region != "" {
-			region = model.FindRegionByName(c.Region) //nolint:staticcheck
-		}
+		region := c.getConfigRegionMapping()
 
 		err := clientcfg.SetDefaultServerVariableDefaultValue("suffix", region.URLSuffix)
 		if err != nil {
@@ -302,16 +299,7 @@ func (c *Config) ManagementAPIClient(ctx context.Context) (*management.APIClient
 	} else {
 		clientcfg.SetDefaultServerIndex(0)
 
-		var region model.RegionMapping
-		if v := os.Getenv("PINGONE_TERRAFORM_REGION_URL_SUFFIX_OVERRIDE"); v != "" {
-			region = model.RegionMapping{
-				URLSuffix: v,
-			}
-		} else if v := c.RegionCode; v != nil {
-			region = model.FindRegionByAPICode(*v)
-		} else if c.Region != "" {
-			region = model.FindRegionByName(c.Region) //nolint:staticcheck
-		}
+		region := c.getConfigRegionMapping()
 
 		err := clientcfg.SetDefaultServerVariableDefaultValue("suffix", region.URLSuffix)
 		if err != nil {
@@ -386,16 +374,7 @@ func (c *Config) MFAAPIClient(ctx context.Context) (*mfa.APIClient, error) {
 	} else {
 		clientcfg.SetDefaultServerIndex(0)
 
-		var region model.RegionMapping
-		if v := os.Getenv("PINGONE_TERRAFORM_REGION_URL_SUFFIX_OVERRIDE"); v != "" {
-			region = model.RegionMapping{
-				URLSuffix: v,
-			}
-		} else if v := c.RegionCode; v != nil {
-			region = model.FindRegionByAPICode(*v)
-		} else if c.Region != "" {
-			region = model.FindRegionByName(c.Region) //nolint:staticcheck
-		}
+		region := c.getConfigRegionMapping()
 
 		err := clientcfg.SetDefaultServerVariableDefaultValue("suffix", region.URLSuffix)
 		if err != nil {
@@ -470,16 +449,7 @@ func (c *Config) RiskAPIClient(ctx context.Context) (*risk.APIClient, error) {
 	} else {
 		clientcfg.SetDefaultServerIndex(0)
 
-		var region model.RegionMapping
-		if v := os.Getenv("PINGONE_TERRAFORM_REGION_URL_SUFFIX_OVERRIDE"); v != "" {
-			region = model.RegionMapping{
-				URLSuffix: v,
-			}
-		} else if v := c.RegionCode; v != nil {
-			region = model.FindRegionByAPICode(*v)
-		} else if c.Region != "" {
-			region = model.FindRegionByName(c.Region) //nolint:staticcheck
-		}
+		region := c.getConfigRegionMapping()
 
 		err := clientcfg.SetDefaultServerVariableDefaultValue("suffix", region.URLSuffix)
 		if err != nil {
@@ -554,16 +524,7 @@ func (c *Config) VerifyAPIClient(ctx context.Context) (*verify.APIClient, error)
 	} else {
 		clientcfg.SetDefaultServerIndex(0)
 
-		var region model.RegionMapping
-		if v := os.Getenv("PINGONE_TERRAFORM_REGION_URL_SUFFIX_OVERRIDE"); v != "" {
-			region = model.RegionMapping{
-				URLSuffix: v,
-			}
-		} else if v := c.RegionCode; v != nil {
-			region = model.FindRegionByAPICode(*v)
-		} else if c.Region != "" {
-			region = model.FindRegionByName(c.Region) //nolint:staticcheck
-		}
+		region := c.getConfigRegionMapping()
 
 		err := clientcfg.SetDefaultServerVariableDefaultValue("suffix", region.URLSuffix)
 		if err != nil {
@@ -602,16 +563,7 @@ func (c *Config) getToken(ctx context.Context) error {
 			return fmt.Errorf("Required parameter missing.  Must provide ClientID, ClientSecret, EnvironmentID and Region.")
 		}
 
-		var region model.RegionMapping
-		if v := os.Getenv("PINGONE_TERRAFORM_REGION_URL_SUFFIX_OVERRIDE"); v != "" {
-			region = model.RegionMapping{
-				URLSuffix: v,
-			}
-		} else if v := c.RegionCode; v != nil {
-			region = model.FindRegionByAPICode(*v)
-		} else if c.Region != "" {
-			region = model.FindRegionByName(c.Region) //nolint:staticcheck
-		}
+		region := c.getConfigRegionMapping()
 
 		regionSuffix := region.URLSuffix
 
