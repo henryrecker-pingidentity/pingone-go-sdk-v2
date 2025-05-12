@@ -45,7 +45,7 @@ func (dst *EnvironmentRegion) UnmarshalJSON(data []byte) error {
 	err = newStrictDecoder(data).Decode(&dst.EnumRegionCode)
 	if err == nil {
 		jsonEnumRegionCode, _ := json.Marshal(dst.EnumRegionCode)
-		if string(jsonEnumRegionCode) == "{}" { // empty struct
+		if string(jsonEnumRegionCode) == "{}" || dst.EnumRegionCode == nil || *dst.EnumRegionCode == "UNKNOWN" {
 			dst.EnumRegionCode = nil
 		} else {
 			match = true
